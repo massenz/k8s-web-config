@@ -1,0 +1,19 @@
+# Created M. Massenzio, 2020-05-24
+#
+# ArgoCD pre-sync hook
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: before
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+spec:
+  template:
+    spec:
+      containers:
+      - name: sleep
+        image: alpine:latest
+        command: ["echo", "pre-sync"]
+      restartPolicy: Never
+  backoffLimit: 0

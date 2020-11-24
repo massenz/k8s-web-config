@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.config.name }}
+
+data:
+  config.yaml: |
+    # Used as ConfigMap to run the server in k8s:
+    #
+    #   kc create configmap frontend-config --from-file=frontend-config.yaml
+
+    server:
+      workdir: /var/lib/flask
+
+    db:
+      # Here the 'hostname' must match the Service `name`
+      # fronting the backend (see mongodb.yaml)
+      uri: "mongodb://{{ .Values.db.url }}:{{ .Values.db.port }}/{{ .Values.db.name }}"
+      collection: "{{ .Values.db.collection }}"

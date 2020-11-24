@@ -1,0 +1,33 @@
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: mongodb
+
+spec:
+  serviceName: mongodb
+  replicas: {{ .Values.db.instances }}
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      containers:
+      - name: {{ .Values.db.node }}
+        image: "mongo:{{ .Values.db.version }}"
+        ports:
+        - name: mongo
+          containerPort: {{ .Values.db.port }}
+          protocol: TCP
+        volumeMounts:
+        - name: data
+          mountPath: /data/db
+
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      resources:
+        requests:
+          storage: 100Mi
+      accessModes:
+      - ReadWriteOnce

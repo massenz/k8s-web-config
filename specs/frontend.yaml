@@ -1,0 +1,92 @@
+# Web Server Deployment
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-cluster
+  labels:
+    app: web-frontend
+    rel: staging
+
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: webapp
+
+  template:
+    metadata:
+      labels:
+        app: webapp
+    spec:
+      volumes:
+      - name: config
+        configMap:
+          name: frontend-config
+
+      containers:
+      - image: massenz/simple-flask:0.5.7
+        imagePullPolicy: Always
+        name: webapp
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+
+        volumeMounts:
+        - name: config
+          mountPath: "/etc/flask"
+          readOnly: true
+
+        resources:
+          requests:
+            cpu: 150m
+            memory: 64Mi
+
+        env:
+        - name: SERVER_PORT
+          value: "8080"
+
+        livenessProbe:
+          httpGet:
+            path: "/health"
+            port: 8080
+
+---
+# Exposes the frontend deployment externally to the cluster
+# Uses a NodePort; the Ingress method is preferred (see ingress.yaml).
+#
+# TODO: currently Ingress does not work, cannot expose the service.
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+
+spec:
+  type: NodePort
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+    # Optional field, makes the URL repeatable across deployments
+    nodePort: 31000
+  selector:
+    app: webapp
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-config
+
+data:
+  config.yaml: |
+    # Configuration file for the Flask Frontend.
+    # Mounted from a ConfigMap.
+    #
+    server:
+      workdir: /var/local/share/k8s-web
+    db:
+      # The URI matches the <pod-name>-<seq>.<service-name>
+      uri: "mongodb://mongo-node-0.mongo-cluster,mongo-node-1.mongo-cluster,mongo-node-2.mongo-cluster:27017/demo-db"
+      collection: "entities"

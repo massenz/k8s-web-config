@@ -1,0 +1,33 @@
+# Service definitions for the Backend DB.
+
+# Fronting service to expose the DB to other services
+#
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.db.url }}
+
+spec:
+  selector:
+    app: mongodb
+
+  ports:
+    - port: {{ .Values.db.port }}
+      targetPort: {{ .Values.db.port }}
+
+---
+# Headless service for the StatefulSet
+#
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+
+spec:
+  clusterIP: None
+  selector:
+    app: mongodb
+
+  ports:
+    - name: mongo
+      port: {{ .Values.db.port }}
