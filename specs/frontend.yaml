@@ -25,7 +25,7 @@ spec:
           name: frontend-config
 
       containers:
-      - image: massenz/simple-flask:0.5.7
+      - image: massenz/simple-flask:0.6.0
         imagePullPolicy: Always
         name: webapp
         ports:
@@ -44,8 +44,15 @@ spec:
             memory: 64Mi
 
         env:
-        - name: SERVER_PORT
-          value: "8080"
+          - name: SERVER_PORT
+            value: "8080"
+          - name: CONFIG
+            value: "/etc/flask/config.yaml"
+          # We will use this to show Kustomize to change its value
+          - name: DEBUG
+            value: "--debug"
+          - name: WORKINGDIR
+            value: "/var/lib/www"
 
         livenessProbe:
           httpGet:
@@ -69,7 +76,7 @@ spec:
     port: 80
     targetPort: http
     # Optional field, makes the URL repeatable across deployments
-    nodePort: 31000
+    nodePort: 32100
   selector:
     app: webapp
 
@@ -85,7 +92,7 @@ data:
     # Mounted from a ConfigMap.
     #
     server:
-      workdir: /var/local/share/k8s-web
+      workdir: /var/lib/www
     db:
       # The URI matches the <pod-name>-<seq>.<service-name>
       uri: "mongodb://mongo-node-0.mongo-cluster,mongo-node-1.mongo-cluster,mongo-node-2.mongo-cluster:27017/demo-db"

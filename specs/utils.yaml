@@ -11,8 +11,8 @@ metadata:
       scope: dev
 spec:
   containers:
-    - image: massenz/dnsutils:1.1.2
-      name: dnsutils
+    - image: massenz/dnsutils:2.0.0
+      name: utils
       command: ["sleep"]
       args:
       - infinity
