@@ -28,7 +28,7 @@ spec:
           name: frontend-config
 
       containers:
-      - image: massenz/simple-flask:0.6.0
+      - image: massenz/simple-flask:0.6.1
         imagePullPolicy: Always
         name: webapp
         ports:

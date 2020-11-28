@@ -18,9 +18,9 @@ spec:
   selector:
     app: mongodb
   ports:
-  - name: mongo
-    port: 27017
-    targetPort: 27017
+    - name: mongo
+      port: 27017
+      targetPort: 27017
 
 ---
 # The "stateful" Pod which
@@ -30,7 +30,8 @@ kind: StatefulSet
 metadata:
     name: "mongo-node"
     labels:
-      cluster: "mongodb-123-us-west-1"
+      cluster: "mongo-cluster"
+      nodename: "mongo-node"
       rel: "mongo-3.7"
 spec:
   serviceName: mongo-cluster
@@ -58,11 +59,11 @@ spec:
             - "--bind_ip"
             - 0.0.0.0
           ports:
-          - containerPort: 27017
-            protocol: TCP
+            - containerPort: 27017
+              protocol: TCP
           volumeMounts:
-          - name: mongo-pvc
-            mountPath: /data/db
+            - name: mongo-pvc
+              mountPath: /data/db
   volumeClaimTemplates:
   - metadata:
       # Here the `name` MUST match the name in the `volumeMounts`
@@ -72,4 +73,4 @@ spec:
         requests:
           storage: 20Mi
       accessModes:
-      - ReadWriteOnce
+        - ReadWriteOnce

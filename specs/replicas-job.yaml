@@ -15,5 +15,5 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: replicas-job
-          image: massenz/mongo-replicas:0.0.1
+          image: massenz/mongo-replicas:0.6.1
           imagePullPolicy: "Always"
