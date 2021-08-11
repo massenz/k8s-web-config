@@ -24,9 +24,19 @@ The "development" part of the services, which contains the code for the applicat
 
 The full deployment of the cluster is done simply executing:
 
-    $ ./servicedeploy
+    $ ./servicedeploy [NAMESPACE]
+
+with `NAMESPACE` an optional Kubernetes `namespace` to deploy the app into.
 
 See [Utilities](#utilities) for instructions as to how to inspect the deployed service.
+
+To remove all the services and clean up, use the `--remove` flag (remember to specify the `namespace` if one was specified during deployment):
+
+    $ ./servicedeploy --remove [NAMESPACE]
+
+The `NAMESPACE` will **not** be removed, even if empty; you will need to do that manually:
+
+    $ kubectl delete ns NAMESPACE
 
 
 ## Backing DB (MongoDB 3.7.9)

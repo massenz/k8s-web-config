@@ -1,19 +1,54 @@
+#!/usr/bin/env zsh
+#
 # Copyright (c) 2020 AlertAvert.com  All rights reserved.
 # Created by M. Massenzio, 2020-11-27
+#
+# Usage: servicedeploy [--remove] [NAMESPACE]
 
-set -eux
+set -eu
 
-BASEDIR=$(dirname $0)
-NAMESPACE=default
+declare -r BASEDIR=$(dirname $0)
+declare action=apply
+if [[ ${1:-} == "--remove" ]]; then
+    echo "Removing all pods, services for the k8s-web application"
+    action="delete"
+    shift 1
+fi
 
-kubectl apply -f ${BASEDIR}/specs/utils.yaml
-kubectl apply -f ${BASEDIR}/specs/backend.yaml
-kubectl apply -f ${BASEDIR}/specs/frontend.yaml
+NAMESPACE=${1:-default}
 
-while ! kubectl get pods -n ${NAMESPACE} | grep mongo | grep Running; do
-    echo "Waiting for a MongoDB node to come up..."
-    sleep 3
+declare -r SPECS_DIR="${BASEDIR}/specs"
+declare -r SPECS=(utils backend frontend)
+
+# Usage: createns NAMESPACE
+#
+# Creates the NAMESPACE if it does not already exists.
+function createns {
+    local ns=${1:-}
+    if [[ -z ${ns} ]]; then
+        echo "ERROR:createns: namespace must be specified"
+        exit 1
+    fi
+
+    if [[ -z $(kubectl get ns | grep ${ns} | awk '{ print $1 }') ]]; then
+        echo "Creating namespace ${ns}"
+        kubectl create ns ${ns}
+    fi
+}
+
+if [[ ${action} == "apply" ]]; then
+    createns ${NAMESPACE}
+fi
+
+
+for spec in ${SPECS[@]}; do
+    kubectl ${action} -f ${SPECS_DIR}/${spec}.yaml --namespace ${NAMESPACE}
+done
+
+while [[ -z $(kubectl get pods -n ${NAMESPACE} | awk '/^mongo.*Running/') ]]; do
+    echo "Waiting 10 seconds for a MongoDB node to come up..."
+    sleep 10
 done
 
 # Configuring the Mongo ReplicaSet
-kubectl apply -f ${BASEDIR}/specs/replicas-job.yaml
+kubectl ${action} -f ${SPECS_DIR}/replicas-job.yaml --namespace ${NAMESPACE}
