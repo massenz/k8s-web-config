@@ -12,7 +12,7 @@ metadata:
       scope: dev
 spec:
   containers:
-    - image: massenz/dnsutils:2.0.0
+    - image: massenz/dnsutils:2.2.0
       name: utils
       command: ["sleep"]
       args:
