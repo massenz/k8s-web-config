@@ -4,21 +4,7 @@
 # Created by M. Massenzio, 2020-11-27
 #
 # Usage: servicedeploy [--remove] [NAMESPACE]
-
 set -eu
-
-declare -r BASEDIR=$(dirname $0)
-declare action=apply
-if [[ ${1:-} == "--remove" ]]; then
-    echo "Removing all pods, services for the k8s-web application"
-    action="delete"
-    shift 1
-fi
-
-NAMESPACE=${1:-default}
-
-declare -r SPECS_DIR="${BASEDIR}/specs"
-declare -r SPECS=(utils backend frontend)
 
 # Usage: createns NAMESPACE
 #
@@ -36,10 +22,21 @@ function createns {
     fi
 }
 
+declare -r BASEDIR=$(dirname $0)
+declare -r SPECS_DIR="${BASEDIR}/specs"
+declare -r SPECS=(backend frontend)
+declare action=apply
+
+if [[ ${1:-} == "--remove" ]]; then
+    echo "Removing all pods, services for the k8s-web application"
+    action="delete"
+    shift 1
+fi
+
+NAMESPACE=${1:-default}
 if [[ ${action} == "apply" ]]; then
     createns ${NAMESPACE}
 fi
-
 
 for spec in ${SPECS[@]}; do
     kubectl ${action} -f ${SPECS_DIR}/${spec}.yaml --namespace ${NAMESPACE}
@@ -52,3 +49,7 @@ done
 
 # Configuring the Mongo ReplicaSet
 kubectl ${action} -f ${SPECS_DIR}/replicas-job.yaml --namespace ${NAMESPACE}
+
+# Deploy the dnsutils pod
+createns tools
+kubectl -n tools -f specs/other/utils.yaml
