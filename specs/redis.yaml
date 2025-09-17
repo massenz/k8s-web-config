@@ -1,0 +1,23 @@
+# Minimalist Redis pod to test connectivity
+# to a cluster.
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: redis-debug
+  namespace: tools
+  labels:
+    app: redis-debug
+spec:
+  containers:
+  - name: redis-debug
+    image: redis:7-alpine
+    command: ["sleep", "infinity"]
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+  restartPolicy: Always
